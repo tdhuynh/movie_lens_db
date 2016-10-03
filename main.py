@@ -49,7 +49,6 @@ create_user_table_command = """
     CREATE UNIQUE INDEX user_info_user_id_uindex ON public.user_info (user_id);
 """
 
-# data_id SERIAL PRIMARY KEY NOT NULL,
 create_data_table_command = """
 CREATE TABLE public.data_info (
     user_id INT,
