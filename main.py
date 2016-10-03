@@ -4,9 +4,9 @@ import psycopg2
 connection = psycopg2.connect("dbname=movie_db user=movie_db")
 cursor = connection.cursor()
 
+cursor.execute("DROP TABLE IF EXISTS public.data_info;")
 cursor.execute("DROP TABLE IF EXISTS public.item_info;")
 cursor.execute("DROP TABLE IF EXISTS public.user_info;")
-cursor.execute("DROP TABLE IF EXISTS public.data_info;")
 
 create_item_table_command = """
     CREATE TABLE public.item_info (
@@ -49,12 +49,22 @@ create_user_table_command = """
     CREATE UNIQUE INDEX user_info_user_id_uindex ON public.user_info (user_id);
 """
 
+# data_id SERIAL PRIMARY KEY NOT NULL,
+create_data_table_command = """
+CREATE TABLE public.data_info (
+    user_id INT,
+    item_id INT,
+    rating INT,
+    timestamp INT,
+    CONSTRAINT data_info_user_info_user_id_fk FOREIGN KEY (user_id) REFERENCES user_info (user_id),
+    CONSTRAINT data_info_item_info_movie_id_fk FOREIGN KEY (item_id) REFERENCES item_info (movie_id)
+);
+"""
+
 cursor.execute(create_item_table_command)
 cursor.execute(create_user_table_command)
+cursor.execute(create_data_table_command)
 
-
-# with open('data.csv') as data_file:
-#     data = csv.reader(data_file, delimiter=' ')
 
 with open('item.csv') as item_file:
     item = csv.reader(item_file, delimiter='|')
@@ -69,10 +79,11 @@ with open('user.csv') as user_file:
         cursor.execute("INSERT INTO public.user_info VALUES (%s,%s,%s,%s,%s)", (row[:]))
 connection.commit()
 
-
-
-
-
+with open('data.csv') as data_file:
+    data = csv.reader(data_file, delimiter='\t')
+    for row in data:
+        cursor.execute("INSERT INTO public.data_info VALUES (%s,%s,%s,%s)", (row[:]))
+connection.commit()
 
 cursor.close()
 connection.close()
